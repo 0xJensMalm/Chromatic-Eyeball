@@ -70,10 +70,11 @@
         let orbs = [];
 
         class Orb {
-            constructor(x, y, z, size, color = 'blue') {
+            constructor(x, y, z, size, color = 'white', isMain = false) { // Added isMain parameter
                 this.position = createVector(x, y, z);
                 this.size = size;
                 this.color = color;
+                this.isMain = isMain;
                 this.rotationSpeed = createVector(random(-0.01, 0.01), random(-0.01, 0.01), random(-0.01, 0.01));
                 this.rotationX = 0;
                 this.rotationY = 0;
@@ -93,23 +94,61 @@
                 rotateY(this.rotationY);
                 rotateZ(this.rotationZ);
                 noFill();
-                if (this.color === 'blue') stroke(0, 0, 255, 100);
-                else if (this.color === 'red') stroke(255, 0, 0, 100);
-                else if (this.color === 'yellow') stroke(255, 255, 0, 100);
-                sphere(this.size);
+
+                if (this.isMain) {
+                    stroke(255, 255, 242, 100);
+                    sphere(this.size);
+
+                    // Configuration variables for denser wireframe
+                    let denserAreaRadius = this.size * 0.35; // Radius of the base circle for denser wireframe
+                    let numPoints = 350; // Number of points for denser wireframe density
+                    let wireframeHeight = this.size * 0.09; // Height of the denser wireframe from the base circle to the pole
+                    let baseCircleOffset = -this.size * 0.95; // Offset of the base circle from the orb's center
+
+                    // Adjust these for rotation and positioning
+                    let rotationAngleX = HALF_PI * 2; // Rotation around X-axis
+                    let rotationAngleY = 0; // Rotation around Y-axis
+                    let rotationAngleZ = 0; // Rotation around Z-axis
+
+                    // Position and rotate the denser wireframe
+                    translate(0, baseCircleOffset, 0);
+                    rotateX(rotationAngleX);
+                    rotateY(rotationAngleY);
+                    rotateZ(rotationAngleZ);
+
+                    for (let i = 0; i < numPoints; i++) {
+                        let angle = TWO_PI / numPoints * i;
+                        let x = denserAreaRadius * cos(angle);
+                        let z = denserAreaRadius * sin(angle); // Use Z due to X-axis rotation
+
+                        // Draw lines from the base circle towards the pole of the orb
+                        stroke(0, 0, 0); // Black color for the denser wireframe
+                        line(x, 0, z, 0, wireframeHeight, 0); // Lines converge towards the pole
+                    }
+                } else {
+                    if (this.color === 'blue') stroke(0, 0, 255, 100);
+                    else if (this.color === 'red') stroke(255, 0, 0, 100);
+                    else if (this.color === 'yellow') stroke(255, 255, 0, 100);
+                    sphere(this.size);
+                }
+
                 pop();
             }
-        }
 
+
+
+
+
+        }
         function setup() {
             createCanvas(700, 700, WEBGL);
-            mainOrb = new Orb(0, 0, 0, 350 * 0.68);
+            mainOrb = new Orb(0, 0, 0, 350 * 0.675, 'blue', true); // Mark the main orb as true for isMain
             orbs.push(mainOrb);
             setupButtons();
         }
 
         function draw() {
-            background(10);
+            background(40);
             orbitControl();
 
             for (let orb of orbs) {
