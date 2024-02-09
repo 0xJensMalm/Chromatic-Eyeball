@@ -50,8 +50,30 @@
             background-color: #FFFF00;
         }
 
-        .orb-button.black {
+        .orb-button.white {
             background-color: #ffffff;
+            /* White background for the white sphere button */
+            color: #000000;
+            /* Color for any symbol/text you might want to add */
+        }
+
+        .orb-button.black {
+            background-color: #000000;
+            /* White background */
+            color: #ffffff;
+            /* Black color for the symbol */
+            font-size: 30px;
+            /* Adjust the size of the symbol */
+            line-height: 0.4;
+            /* Set line height for better vertical alignment */
+            text-align: center;
+            /* Center the text horizontally */
+            vertical-align: middle;
+            /* Center the content vertically */
+            padding: 2px 0;
+            /* Add some padding at the top and bottom to help with vertical centering */
+            margin-bottom: 25px;
+            /* Increase bottom margin to push the button up */
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
@@ -62,7 +84,8 @@
         <button class="orb-button blue" id="blueOrb"></button>
         <button class="orb-button red" id="redOrb"></button>
         <button class="orb-button yellow" id="yellowOrb"></button>
-        <button class="orb-button black" id="resetOrb"></button>
+        <button class="orb-button white" id="whiteOrb"></button> <!-- White sphere button -->
+        <button class="orb-button black" id="resetOrb">&#x21BB;</button> <!-- Reset button -->
     </div>
 
     <script>
@@ -70,21 +93,25 @@
         let orbs = [];
 
         class Orb {
-            constructor(x, y, z, size, color = 'white', isMain = false) { // Added isMain parameter
+            constructor(x, y, z, size, color = 'white', isMain = false) {
                 this.position = createVector(x, y, z);
                 this.size = size;
                 this.color = color;
                 this.isMain = isMain;
-                this.rotationSpeed = createVector(random(-0.01, 0.01), random(-0.01, 0.01), random(-0.01, 0.01));
-                this.rotationX = 0;
+                // Adjust rotation speeds as needed for the oscillation effect
+                this.rotationSpeed = createVector(0, 0.002, 0); // Slow rotation around Y-axis
+                this.rotationX = 180.9; // Rotate 180 degrees around X-axis to flip the orb
                 this.rotationY = 0;
                 this.rotationZ = 0;
+                this.rotationDirection = 1; // Direction of rotation for oscillation
             }
 
             update() {
-                this.rotationX += this.rotationSpeed.x;
-                this.rotationY += this.rotationSpeed.y;
-                this.rotationZ += this.rotationSpeed.z;
+                // Oscillate rotation back and forth around the Y-axis
+                this.rotationY += this.rotationSpeed.y * this.rotationDirection;
+                if (this.rotationY > QUARTER_PI || this.rotationY < -QUARTER_PI) {
+                    this.rotationDirection *= -1; // Change direction
+                }
             }
 
             display() {
@@ -129,6 +156,7 @@
                     if (this.color === 'blue') stroke(0, 0, 255, 100);
                     else if (this.color === 'red') stroke(255, 0, 0, 100);
                     else if (this.color === 'yellow') stroke(255, 255, 0, 100);
+                    else if (this.color === 'white') stroke(255);
                     sphere(this.size);
                 }
 
@@ -158,7 +186,14 @@
         }
 
         function addOrb(color) {
-            orbs.push(new Orb(0, 0, 0, 0, color)); // Temporarily set the new orb's size to 0
+            let orbColor = color === 'white' ? 'white' : color; // Determine the correct color
+
+            // Create a new orb with the specified color
+            let newOrb = new Orb(0, 0, 0, 0, orbColor); // Use orbColor to set the correct color
+
+            // Push the newOrb to the orbs array
+            orbs.push(newOrb); // Now using newOrb which has the correct color
+
             const totalOrbs = orbs.length - 1; // Exclude the main orb from the count
             for (let i = 1; i < orbs.length; i++) { // Start from 1 to skip the main orb
                 const sizeFactor = i / totalOrbs; // Determine the size factor based on the orb's position
@@ -166,14 +201,19 @@
             }
         }
 
+
         function resetOrbs() {
-            orbs = [new Orb(0, 0, 0, 350 * 0.75)]; // Reset to just the main orb
+            orbs = []; // Clear the existing orbs
+            mainOrb = new Orb(0, 0, 0, 350 * 0.675, 'white', true); // Recreate the main orb with white color and isMain set to true
+            orbs.push(mainOrb); // Add the main orb to the orbs array
         }
+
 
         function setupButtons() {
             document.getElementById('blueOrb').addEventListener('click', () => addOrb('blue'));
             document.getElementById('redOrb').addEventListener('click', () => addOrb('red'));
             document.getElementById('yellowOrb').addEventListener('click', () => addOrb('yellow'));
+            document.getElementById('whiteOrb').addEventListener('click', () => addOrb('white')); // Event for white orb
             document.getElementById('resetOrb').addEventListener('click', resetOrbs);
         }
     </script>
