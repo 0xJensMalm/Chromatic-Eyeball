@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Orb</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #222;
+        }
+
+        canvas {
+            display: block;
+            width: 700px;
+            height: 700px;
+        }
+
+        #buttons {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .orb-button {
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+
+        .orb-button.blue {
+            background-color: #0000FF;
+        }
+
+        .orb-button.red {
+            background-color: #FF0000;
+        }
+
+        .orb-button.yellow {
+            background-color: #FFFF00;
+        }
+
+        .orb-button.black {
+            background-color: #ffffff;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+</head>
+
+<body>
+    <div id="buttons">
+        <button class="orb-button blue" id="blueOrb"></button>
+        <button class="orb-button red" id="redOrb"></button>
+        <button class="orb-button yellow" id="yellowOrb"></button>
+        <button class="orb-button black" id="resetOrb"></button>
+    </div>
+
+    <script>
+        let mainOrb;
+        let orbs = [];
+
+        class Orb {
+            constructor(x, y, z, size, color = 'blue') {
+                this.position = createVector(x, y, z);
+                this.size = size;
+                this.color = color;
+                this.rotationSpeed = createVector(random(-0.01, 0.01), random(-0.01, 0.01), random(-0.01, 0.01));
+                this.rotationX = 0;
+                this.rotationY = 0;
+                this.rotationZ = 0;
+            }
+
+            update() {
+                this.rotationX += this.rotationSpeed.x;
+                this.rotationY += this.rotationSpeed.y;
+                this.rotationZ += this.rotationSpeed.z;
+            }
+
+            display() {
+                push();
+                translate(this.position.x, this.position.y, this.position.z);
+                rotateX(this.rotationX);
+                rotateY(this.rotationY);
+                rotateZ(this.rotationZ);
+                noFill();
+                if (this.color === 'blue') stroke(0, 0, 255, 100);
+                else if (this.color === 'red') stroke(255, 0, 0, 100);
+                else if (this.color === 'yellow') stroke(255, 255, 0, 100);
+                sphere(this.size);
+                pop();
+            }
+        }
+
+        function setup() {
+            createCanvas(700, 700, WEBGL);
+            mainOrb = new Orb(0, 0, 0, 350 * 0.68);
+            orbs.push(mainOrb);
+            setupButtons();
+        }
+
+        function draw() {
+            background(10);
+            orbitControl();
+
+            for (let orb of orbs) {
+                orb.update();
+                orb.display();
+            }
+        }
+
+        function addOrb(color) {
+            orbs.push(new Orb(0, 0, 0, 0, color)); // Temporarily set the new orb's size to 0
+            const totalOrbs = orbs.length - 1; // Exclude the main orb from the count
+            for (let i = 1; i < orbs.length; i++) { // Start from 1 to skip the main orb
+                const sizeFactor = i / totalOrbs; // Determine the size factor based on the orb's position
+                orbs[i].size = mainOrb.size * sizeFactor; // Set the size relative to the main orb
+            }
+        }
+
+        function resetOrbs() {
+            orbs = [new Orb(0, 0, 0, 350 * 0.75)]; // Reset to just the main orb
+        }
+
+        function setupButtons() {
+            document.getElementById('blueOrb').addEventListener('click', () => addOrb('blue'));
+            document.getElementById('redOrb').addEventListener('click', () => addOrb('red'));
+            document.getElementById('yellowOrb').addEventListener('click', () => addOrb('yellow'));
+            document.getElementById('resetOrb').addEventListener('click', resetOrbs);
+        }
+    </script>
+</body>
+
+</html>
